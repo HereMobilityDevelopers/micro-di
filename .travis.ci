@@ -1,0 +1,19 @@
+language: node_js
+
+node_js:
+  - "stable"
+
+cache:
+  npm: true
+  directories:
+    - "node_modules"
+
+branches:
+  only:
+    - master
+
+install:
+  - npm ci
+
+script:
+  - npm test
