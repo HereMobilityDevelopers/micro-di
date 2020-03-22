@@ -50,7 +50,7 @@ export interface Designator<T> {
 }
 
 /* Registers a resolver associated with the specified class or string token */
-export function RegisterResolver<T, R>(token: Designator<T> | string, resolver: () => R) {
+export function RegisterResolver<T>(token: Designator<T> | string, resolver: () => T) {
   if (!getResolver(token)) setResolver(token, resolver);
 }
 
@@ -63,19 +63,21 @@ export function OverrideResolver<T, R>(token: Designator<T> | string, resolver: 
  * Provided constructor will be called first time the dependency accessed and
  * constructed instance will be returned on any subsequent resolution.
  */
-export function RegisterInstance<T, C>(token: Designator<T> | string, constructor: () => C) {
+export function RegisterInstance<T>(token: Designator<T> | string, constructor: () => T) {
   if (!getResolver(token)) {
     setResolver(token, resolveOnce(token, constructor));
   }
 }
 
-export function OverrideInstance<T, C>(token: Designator<T> | string, constructor: () => C) {
+export function OverrideInstance<T, R>(token: Designator<T> | string, constructor: () => R) {
   setResolver(token, resolveOnce(token, constructor));
 }
 
 /* Resolves an instance associated with specified dependency class or string token */
-export function ResolveDependency<T>(token: Designator<T> | string): T {
-  return getResolver(token)();
+export function ResolveDependency<T>(token: Designator<T> | string) {
+  const resolve = getResolver(token);
+  if (resolve) return resolve();
+  throw Error(`Trying to resolve unregistered token: ${token}`);
 }
 
 /* A class decorator that registers designated class as an injectable dependency. */
