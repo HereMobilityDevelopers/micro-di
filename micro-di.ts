@@ -26,17 +26,17 @@ SOFTWARE.
 
 const resolvers: { [key: string]: () => any } = {};
 
-function getResolver<T>(token: Designator<T> | string) {
+function getResolver<T>(token: Constructible<T> | string) {
   if (typeof token === "string") return resolvers[token] as () => T;
   return token.prototype.$dependencyResolver as () => T;
 }
 
-function setResolver<T, R>(token: Designator<T> | string, resolver: () => R) {
+function setResolver<T, R>(token: Constructible<T> | string, resolver: () => R) {
   if (typeof token === "string") resolvers[token] = resolver;
   else token.prototype.$dependencyResolver = resolver;
 }
 
-function resolveOnce<T, C>(token: Designator<T> | string, constructor: () => C) {
+function resolveOnce<T, C>(token: Constructible<T> | string, constructor: () => C) {
   return () => {
     const instance = constructor();
     OverrideResolver(token, () => instance);
@@ -45,16 +45,16 @@ function resolveOnce<T, C>(token: Designator<T> | string, constructor: () => C) 
 }
 
 /* An interface wrapper for constructable type */
-export interface Designator<T> {
+export interface Constructible<T> {
   new (...args: any[]): T;
 }
 
 /* Registers a resolver associated with the specified class or string token */
-export function RegisterResolver<T>(token: Designator<T> | string, resolver: () => T) {
+export function RegisterResolver<T>(token: Constructible<T> | string, resolver: () => T) {
   if (!getResolver(token)) setResolver(token, resolver);
 }
 
-export function OverrideResolver<T, R>(token: Designator<T> | string, resolver: () => R) {
+export function OverrideResolver<T, R>(token: Constructible<T> | string, resolver: () => R) {
   setResolver(token, resolver);
 }
 
@@ -63,18 +63,18 @@ export function OverrideResolver<T, R>(token: Designator<T> | string, resolver: 
  * Provided constructor will be called first time the dependency accessed and
  * constructed instance will be returned on any subsequent resolution.
  */
-export function RegisterInstance<T>(token: Designator<T> | string, constructor: () => T) {
+export function RegisterInstance<T>(token: Constructible<T> | string, constructor: () => T) {
   if (!getResolver(token)) {
     setResolver(token, resolveOnce(token, constructor));
   }
 }
 
-export function OverrideInstance<T, R>(token: Designator<T> | string, constructor: () => R) {
+export function OverrideInstance<T, R>(token: Constructible<T> | string, constructor: () => R) {
   setResolver(token, resolveOnce(token, constructor));
 }
 
 /* Resolves an instance associated with specified dependency class or string token */
-export function ResolveDependency<T>(token: Designator<T> | string) {
+export function ResolveDependency<T>(token: Constructible<T> | string) {
   const resolve = getResolver(token);
   if (resolve) return resolve();
   throw Error(`Trying to resolve unregistered token: ${token}`);
@@ -82,7 +82,7 @@ export function ResolveDependency<T>(token: Designator<T> | string) {
 
 /* A class decorator that registers designated class as an injectable dependency. */
 export function Dependency(resolver?: () => any) {
-  return function<T>(target: Designator<T>) {
+  return function<T>(target: Constructible<T>) {
     RegisterResolver(target, resolver || (() => new target()));
   };
 }
@@ -93,7 +93,7 @@ export function Dependency(resolver?: () => any) {
  * constructed instance will be returned on any subsequent resolution.
  */
 export function Singleton(constructor?: () => any) {
-  return function<T>(target: Designator<T>) {
+  return function<T>(target: Constructible<T>) {
     RegisterInstance(target, constructor || (() => new target()));
   };
 }
@@ -102,7 +102,7 @@ export function Singleton(constructor?: () => any) {
  * A property decorator that resolves and injects the resolved instance
  * of specified dependency to designated property.
  */
-export function Inject<T>(token: Designator<T> | string) {
+export function Inject<T>(token: Constructible<T> | string) {
   return (target: Object, property: string | symbol) => {
     Object.defineProperty(target, property, {
       get: () => ResolveDependency(token),
