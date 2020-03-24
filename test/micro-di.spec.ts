@@ -1,4 +1,4 @@
-import { Dependency, Inject, RegisterResolver, ResolveDependency, Singleton } from "./micro-di";
+import { Dependency, Inject, RegisterResolver, ResolveDependency, Singleton } from "../src";
 
 let DependencyOneCounter = 0;
 

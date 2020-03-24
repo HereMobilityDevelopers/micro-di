@@ -7,3 +7,5 @@ node_modules
 *.njsproj
 *.sln
 *.sw?
+/lib
+/coverage

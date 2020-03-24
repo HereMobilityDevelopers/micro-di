@@ -1,1 +1,1 @@
-module.exports = require('./micro-di');
+module.exports = require('./src');

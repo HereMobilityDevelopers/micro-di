@@ -1,19 +1,17 @@
-language: node_js
+language: nodejs
 
-node_js:
-  - "stable"
-
-cache:
-  npm: true
-  directories:
-    - "node_modules"
-
-branches:
-  only:
-    - master
-
-install:
-  - npm ci
+before_script:
+  - npm install
 
 script:
-  - npm test
+  - npm run test
+
+before_deploy:
+  - npm run build
+
+deploy:
+  edge: true
+  provider: npm
+  email: "$NPM_EMAIL"
+  api_key: "$NPM_TOKEN"
+  cleanup: true
