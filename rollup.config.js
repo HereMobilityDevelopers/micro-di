@@ -5,9 +5,10 @@ import pkg from './package.json';
 export default {
   input: 'src/index.ts',
   output: [
+
     {
       file: pkg.main,
-      name: "MicroDi",
+      name: "microdi",
       format: 'umd',
       exports: 'named',
       sourcemap: true
@@ -20,10 +21,7 @@ export default {
     include: 'src/**',
   },
   plugins: [
-    typescript({
-      typescript: require('typescript'),
-      useTsconfigDeclarationDir: true
-    }),
+    typescript(),
     terser()
   ]
 };

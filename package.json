@@ -1,13 +1,13 @@
 {
   "name": "@here-mobility/micro-di",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/HereMobilityDevelopers/micro-di.git"
   },
   "homepage": "https://github.com/HereMobilityDevelopers/micro-di",
   "license": "MIT",
-  "main": "lib/index.js",
+  "main": "lib/index.es.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "rollup -c && tsc",
@@ -30,6 +30,7 @@
     "rollup-plugin-terser": "^5.3.0",
     "rollup-plugin-typescript2": "^0.26.0",
     "ts-jest": "^25.2.1",
+    "tslib": "^1.11.1",
     "typescript": "^3.8.3"
   },
   "files": [
