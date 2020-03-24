@@ -7,7 +7,8 @@ export default {
   output: [
     {
       file: pkg.main,
-      format: 'es',
+      name: "MicroDi",
+      format: 'umd',
       exports: 'named',
       sourcemap: true
     }
