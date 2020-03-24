@@ -1,5 +1,8 @@
 language: nodejs
 
+node_js:
+  - "stable"
+
 before_script:
   - npm install
 
