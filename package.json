@@ -1,6 +1,6 @@
 {
   "name": "@here-mobility/micro-di",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/HereMobilityDevelopers/micro-di.git"
@@ -11,7 +11,7 @@
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "rollup -c && tsc",
-    "test": "jest --coverage"
+    "test": "jest --coverage && coveralls < coverage/lcov.info"
   },
   "dependencies": {},
   "devDependencies": {
