@@ -4,5 +4,164 @@
 [![Build Status](https://travis-ci.com/HereMobilityDevelopers/micro-di.svg?branch=master)](https://travis-ci.com/HereMobilityDevelopers/micro-di)
 [![Coverage Status](https://coveralls.io/repos/github/HereMobilityDevelopers/micro-di/badge.svg?branch=master)](https://coveralls.io/github/HereMobilityDevelopers/micro-di?branch=master)
 
+### Introduction
 
 A lightweight, minimal module for allowing dependency-injection in your frontend app.
+Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that cares about artifact size.
+
+### WIFM
+
+Dependency Injection (DI) is a design pattern used to implement IoC. It allows the creation of dependent objects outside of a class and provides those objects to a class through different ways. Using DI, we move the creation and binding of the dependent objects outside of the class that depends on them.
+
+### How
+
+The Dependency Injection pattern involves 3 types of classes.
+
+**Client Class**: The client class (dependent class) is a class which depends on the service class
+**Service Class**: The service class (dependency) is a class that provides service to the client class.
+**Injector Class**: The injector class injects the service class object into the client class.
+The following figure illustrates the relationship between these classes:
+
+![alt text](https://www.tutorialsteacher.com/Content/images/ioc/DI.png)
+
+As you can see, the injector class creates an object of the service class, and injects that object to a client object. In this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class.
+
+### Installation
+
+To install using the **npm** package manager, run the following command:
+`$ npm install @here-mobility/micro-di --save`
+
+or **yarn** package manager:
+`$ yarn add @here-mobility/micro-di`
+
+### Usage
+
+micro-di has only one global IoC container.
+The IoC container creates an object of the specified class and also injects all the dependency objects through a constructor, a property or a method at run time and disposes it at the appropriate time. This is done so that we don't have to create and manage objects manually. Dependencies are lazily loaded - only when accessed for the first time.
+
+### Limitations
+micro-di does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles.
+
+## API
+
+### Dependency Registration
+
+Register **SomeFactory** as a dependency using `RegisterDependency` method. This can be done in anywhere in your application code:
+
+```js
+import { RegisterDependency } from "@here-mobility/micro-di";
+import { SomeFactory } from "some-factory.js";
+
+RegisterDependency(SomeFactory, () => new SomeFactory("param"))
+```
+
+Register **SomeClass** using `RegisterInstance` method. `RegisterInstance` registers a resolver function which will be resolved to the constructed instance the first time `SomeClass` dependency is accessed. After the first time, the resolved instance will be stored in the container and subsequent access to `SomeClass` will always return the same instance as a Singleton.
+
+```js
+import { RegisterInstance } from "@here-mobility/micro-di";
+import { SomeClass } from "some-class.js";
+
+RegisterInstance(SomeClass, () => new SomeClass("param"))
+```
+
+It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Dependency` decorator registers resolver function as is. `Singleton` decorator will register a single instance of this object.
+
+```js
+import { Dependency } from "@here-mobility/micro-di";
+
+const counter = 0;
+
+@Dependency(() => new NameFactory())
+@Dependency("NameFactory") // Can register multiple distinct dependencies
+class NameFactory {
+  getName() {
+    return `Token#${counter}`
+  }
+}
+
+@Singleton()
+class Locator {
+  constructor(name) {
+    this.name = name;
+  }
+}
+```
+
+```js
+import { Singlton } from "@here-mobility/micro-di";
+
+@Singleton()
+class Locator {
+  constructor(name) {
+    ...
+  }
+}
+```
+
+### Dependency Resolution
+
+Dependency can be resolved by using `ResolveDependency` method. This can be done in anywhere in your application code:
+
+```js
+import { ResolveDependency } from "@here-mobility/micro-di";
+import { NameFactory } from "named-factory.js";
+
+const instance = ResolveDependency(NameFactory);
+
+```
+
+Dependency can also be injected by using experimental-decorator `Inject`:
+
+```typescript
+import { Inject } from "@here-mobility/micro-di";
+import { Locator } from "locator.js";
+
+class DependantClass {
+  @Inject("NameFactory")
+  factory!: NameFactory;
+
+  @Inject(Locator)
+  private prop!: Locator;
+
+  name: string = "noname";
+
+  giveName() {
+    this.name = this.factory.getName();
+  }
+}
+```
+
+### Overriding Dependencies in tests
+
+Dependencies in unit tests can be simply overridden with relevant mocks without touching the properties of the actual object under test. Use `OverrideResolver` and `OverrideInstance` methods where applicable accordingly:
+
+Example of `register-mocks.js`:
+
+ ```javascript
+import { MockFactory, MockLocator } from "mocks"
+import { Locator } from "locator.js";
+import { NameFactory } from "named-factory.js";
+
+OverrideInstance(Locator, () => new MockLocator());
+OverrideResolver(NameFactory, () => new MockFactory());
+```
+
+Using in the test case:
+
+```javascript
+import "./register-mocks.js";
+import { DependantClass } from "@/dependant-class.ts";
+import { MockFactory } from "mocks"
+
+describe("DependantClass", () => {
+  const testedClass = DependantClass();
+  const mockFactory = ResolveDependency("NameFactory") as MockFactory;
+
+  it("can be named", () => {
+    testedClass.giveName();
+    expect(mockFactory.lastGetNameCaller).toEqual(testedClass);
+    expect(testedClass.name).toEqual(mockFactory.mockedName);
+  });
+});
+
+```
