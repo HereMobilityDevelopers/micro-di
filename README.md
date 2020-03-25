@@ -11,20 +11,22 @@ Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use 
 
 ### WIFM
 
-Dependency Injection (DI) is a design pattern used to implement IoC. It allows the creation of dependent objects outside of a class and provides those objects to a class through different ways. Using DI, we move the creation and binding of the dependent objects outside of the class that depends on them.
+Dependency Injection (DI) is a design pattern used to implement IoC (Inversion of Control). It allows the creation of dependent objects outside of a class and provides those objects to a class through different ways. Using DI, we move the creation and binding of the dependent objects outside of the class that depends on them.
 
 ### How
 
 The Dependency Injection pattern involves 3 types of classes.
 
-**Client Class**: The client class (dependent class) is a class which depends on the service class
+**Client Class**: The client class (dependent class) is a class which depends on the service class.
 **Service Class**: The service class (dependency) is a class that provides service to the client class.
-**Injector Class**: The injector class injects the service class object into the client class.
+**Container Class**: The container class is a class that associates token with the service class.
+**Injector Class**: The injector class injects the token into the client class following by its internal logic. 
+Later the client will resolve the inject token from the container and receive an instance of the service or another compatible class.  
 The following figure illustrates the relationship between these classes:
 
-![alt text](https://www.tutorialsteacher.com/Content/images/ioc/DI.png)
+![alt text](dioc.png)
 
-As you can see, the injector class creates an object of the service class, and injects that object to a client object. In this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class.
+As you can see, in this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class.
 
 ### Installation
 
@@ -36,11 +38,10 @@ or **yarn** package manager:
 
 ### Usage
 
-micro-di has only one global IoC container.
 The IoC container creates an object of the specified class and also injects all the dependency objects through a constructor, a property or a method at run time and disposes it at the appropriate time. This is done so that we don't have to create and manage objects manually. Dependencies are lazily loaded - only when accessed for the first time.
 
 ### Limitations
-micro-di does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles.
+micro-di does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also micro-di has only one global IoC container. Each class can have only one entry per class token (named string tokens are unlimited).
 
 ## API
 
