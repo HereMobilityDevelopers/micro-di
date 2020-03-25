@@ -15,25 +15,34 @@ Dependency Injection (DI) is a design pattern used to implement IoC (Inversion o
 
 ### How
 
-The Dependency Injection pattern involves 3 types of classes.
+The Dependency Injection pattern involves following types of classes:
 
 **Client Class**: The client class (dependent class) is a class which depends on the service class.
+
 **Service Class**: The service class (dependency) is a class that provides service to the client class.
+
 **Container Class**: The container class is a class that associates token with the service class.
+
 **Injector Class**: The injector class injects the token into the client class following by its internal logic. 
-Later the client will resolve the inject token from the container and receive an instance of the service or another compatible class.  
+
+Later the client will resolve the injected token from the container and receive an instance of the service or another compatible class.  
+
 The following figure illustrates the relationship between these classes:
 
+
 ![alt text](dioc.png)
+
 
 As you can see, in this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class.
 
 ### Installation
 
 To install using the **npm** package manager, run the following command:
+
 `$ npm install @here-mobility/micro-di --save`
 
 or **yarn** package manager:
+
 `$ yarn add @here-mobility/micro-di`
 
 ### Usage
@@ -47,7 +56,7 @@ micro-di does not support cyclic dependency detection, it is up to the developer
 
 ### Dependency Registration
 
-Register **SomeFactory** as a dependency using `RegisterDependency` method. This can be done in anywhere in your application code:
+Register `SomeFactory` as a dependency using `RegisterDependency` method. This can be done in anywhere in your application code:
 
 ```js
 import { RegisterDependency } from "@here-mobility/micro-di";
