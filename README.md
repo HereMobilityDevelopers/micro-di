@@ -1,21 +1,17 @@
-# micro-di
-
 [![License](https://img.shields.io/badge/license-MIT-ff69b4.svg)](https://github.com/kzlekk/ClassyFlux/raw/master/LICENSE)
 [![Build Status](https://travis-ci.com/HereMobilityDevelopers/micro-di.svg?branch=master)](https://travis-ci.com/HereMobilityDevelopers/micro-di)
 [![Coverage Status](https://coveralls.io/repos/github/HereMobilityDevelopers/micro-di/badge.svg?branch=master)](https://coveralls.io/github/HereMobilityDevelopers/micro-di?branch=master)
 
-### Introduction
+# micro-di
 
 A lightweight, minimal module for allowing dependency-injection in your frontend app.
-Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that cares about artifact size.
+Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that cares about artefact size.
 
-### WIFM
+# What's in it for me?
 
 Dependency Injection (DI) is a design pattern used to implement IoC (Inversion of Control). It allows the creation of dependent objects outside of a class and provides those objects to a class through different ways. Using DI, we move the creation and binding of the dependent objects outside of the class that depends on them.
 
-### How
-
-The Dependency Injection pattern involves following types of classes:
+The Dependency Injection pattern usually involve following types of classes:
 
 **Client Class**: The client class (dependent class) is a class which depends on the service class.
 
@@ -25,34 +21,28 @@ The Dependency Injection pattern involves following types of classes:
 
 **Injector Class**: The injector class injects the token into the client class following by its internal logic. 
 
-Later the client will resolve the injected token from the container and receive an instance of the service or another compatible class.  
-
-The following figure illustrates the relationship between these classes:
-
+Later the client will resolve the injected token from the container and receive an instance of the service or another compatible class. The following figure illustrates the relationship between these classes:
 
 ![alt text](dioc.png)
 
-
 As you can see, in this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class.
 
-### Installation
+# Features & Limitations
+
+
+micro-di is simple to use. It implements only two actions required for DI and IoC - registration and resolution of the dependencies. When used with decorators, micro-di allows to build dependency graph "automatically" where the class declarations occurs. Dependencies registered in IoC container as a builders and are lazily resolved - only when accessed for the first time. micro-di does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited.
+
+# Installation
 
 To install using the **npm** package manager, run the following command:
 
 `$ npm install @here-mobility/micro-di --save`
 
-or **yarn** package manager:
+To install using the **yarn** package manager:
 
 `$ yarn add @here-mobility/micro-di`
 
-### Usage
-
-The IoC container creates an object of the specified class and also injects all the dependency objects through a constructor, a property or a method at run time and disposes it at the appropriate time. This is done so that we don't have to create and manage objects manually. Dependencies are lazily loaded - only when accessed for the first time.
-
-### Limitations
-micro-di does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also micro-di has only one global IoC container. Each class can have only one entry per class token (named string tokens are unlimited).
-
-## API
+# Usage
 
 ### Dependency Registration
 
@@ -65,7 +55,7 @@ import { SomeFactory } from "some-factory.js";
 RegisterDependency(SomeFactory, () => new SomeFactory("param"))
 ```
 
-Register **SomeClass** using `RegisterInstance` method. `RegisterInstance` registers a resolver function which will be resolved to the constructed instance the first time `SomeClass` dependency is accessed. After the first time, the resolved instance will be stored in the container and subsequent access to `SomeClass` will always return the same instance as a Singleton.
+Register `SomeClass` using `RegisterInstance` method. `RegisterInstance` registers a resolver function which will be resolved to the constructed instance the first time `SomeClass` dependency is accessed. After the first time, the resolved instance will be stored in the container and subsequent access to `SomeClass` will always return the same instance as a Singleton.
 
 ```js
 import { RegisterInstance } from "@here-mobility/micro-di";
@@ -74,7 +64,7 @@ import { SomeClass } from "some-class.js";
 RegisterInstance(SomeClass, () => new SomeClass("param"))
 ```
 
-It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Dependency` decorator registers resolver function as is. `Singleton` decorator will register a single instance of this object.
+It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Dependency` decorator registers resolver function as is:
 
 ```js
 import { Dependency } from "@here-mobility/micro-di";
@@ -88,14 +78,9 @@ class NameFactory {
     return `Token#${counter}`
   }
 }
-
-@Singleton()
-class Locator {
-  constructor(name) {
-    this.name = name;
-  }
-}
 ```
+
+`Singleton` decorator will register a single instance of this object:
 
 ```js
 import { Singlton } from "@here-mobility/micro-di";
