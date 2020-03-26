@@ -27,7 +27,7 @@ Later the client will resolve the injected token from the container and receive 
 
 As you can see, in this approach, the DI pattern separates the responsibility of creating an object instance from the service class outside of the dependent client class, which reduces coupling between service and client classes.
 
-# Features & Limitations
+# Features
 
 micro-di is simple to use. It implements only two actions required for DI - registration and resolution of the dependencies. When used with decorators, micro-di allows building the dependency graph "automatically" inline with the class definition. Dependencies are registered in the IoC container as functions that return an object instance (ctor) and are lazily loaded (resolved only upon first access).
 
