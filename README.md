@@ -5,7 +5,7 @@
 # micro-di
 
 A lightweight, minimal module for allowing dependency-injection in your frontend app.
-Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that cares about artefact size.
+Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that cares about artifact size.
 
 # What's in it for me?
 
@@ -19,18 +19,17 @@ The Dependency Injection pattern usually involve following types of classes:
 
 **Container Class**: The container class is a class that associates token with the service class.
 
-**Injector Class**: The injector class injects the token into the client class following by its internal logic. 
+**Injector Class**: The injector class injects the token into the client class following by its internal logic.
 
 Later the client will resolve the injected token from the container and receive an instance of the service or another compatible class. The following figure illustrates the relationship between these classes:
 
 ![alt text](dioc.png)
 
-As you can see, in this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class, which is reduces coupling between seevice and client classes.
+As you can see, in this approach, the DI pattern separates the responsibility of creating an object instance from the service class outside of the dependent client class, which reduces coupling between service and client classes.
 
 # Features & Limitations
 
-
-micro-di is simple to use. It implements only two actions required for DI and IoC - registration and resolution of the dependencies. When used with decorators, micro-di allows to build dependency graph "automatically" where the class declarations occurs. Dependencies are registered in IoC container as a functions that returns an instance an object and are lazily resolved - only when accessed for the first time. This library does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited.
+micro-di is simple to use. It implements only two actions required for DI - registration and resolution of the dependencies. When used with decorators, micro-di allows to build dependency graph "automatically" inline with class definition. Dependencies are registered in IoC container as functions that return object instance (ctor) and are lazily loaded. Meaning - resolved only upon first access. This library does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also, micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited.
 
 # Installation
 
@@ -46,7 +45,7 @@ To install using the **yarn** package manager:
 
 ### Dependency Registration
 
-Register `SomeFactory` as a dependency using `RegisterDependency` method. This can be done in anywhere in your application code:
+Register `SomeFactory` as a dependency using `RegisterDependency` method. This can be done anywhere in your application code:
 
 ```js
 import { RegisterDependency } from "@here-mobility/micro-di";
@@ -95,7 +94,7 @@ class Locator {
 
 ### Dependency Resolution
 
-Dependency can be resolved by using `ResolveDependency` method. This can be done in anywhere in your application code:
+Dependency can be resolved by using `ResolveDependency` method. This can be done anywhere in your application code:
 
 ```js
 import { ResolveDependency } from "@here-mobility/micro-di";
