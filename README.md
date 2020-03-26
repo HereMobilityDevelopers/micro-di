@@ -5,7 +5,7 @@
 # micro-di
 
 A lightweight, minimal module for allowing dependency-injection in your frontend app.
-Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that cares about artifact size.
+Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that care about artifact size.
 
 # What's in it for me?
 
@@ -29,7 +29,11 @@ As you can see, in this approach, the DI pattern separates the responsibility of
 
 # Features & Limitations
 
-micro-di is simple to use. It implements only two actions required for DI - registration and resolution of the dependencies. When used with decorators, micro-di allows to build dependency graph "automatically" inline with class definition. Dependencies are registered in IoC container as functions that return object instance (ctor) and are lazily loaded. Meaning - resolved only upon first access. This library does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also, micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited.
+micro-di is simple to use. It implements only two actions required for DI - registration and resolution of the dependencies. When used with decorators, micro-di allows building the dependency graph "automatically" inline with the class definition. Dependencies are registered in the IoC container as functions that return an object instance (ctor) and are lazily loaded (resolved only upon first access).
+
+# Limitations
+
+This library does not support cyclic dependency detection, it is up to the developer to avoid a dependency graph with cycles. Also, micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited but have to be unique.
 
 # Installation
 
