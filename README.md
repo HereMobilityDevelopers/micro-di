@@ -25,12 +25,12 @@ Later the client will resolve the injected token from the container and receive 
 
 ![alt text](dioc.png)
 
-As you can see, in this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class.
+As you can see, in this way, the DI pattern separates the responsibility of creating an object of the service class out of the client class, which is reduces coupling between seevice and client classes.
 
 # Features & Limitations
 
 
-micro-di is simple to use. It implements only two actions required for DI and IoC - registration and resolution of the dependencies. When used with decorators, micro-di allows to build dependency graph "automatically" where the class declarations occurs. Dependencies registered in IoC container as a builders and are lazily resolved - only when accessed for the first time. micro-di does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited.
+micro-di is simple to use. It implements only two actions required for DI and IoC - registration and resolution of the dependencies. When used with decorators, micro-di allows to build dependency graph "automatically" where the class declarations occurs. Dependencies are registered in IoC container as a functions that returns an instance an object and are lazily resolved - only when accessed for the first time. This library does not support cyclic dependency detection, it is up to the developer to avoid dependency graph with cycles. Also micro-di has only one global IoC container. Each class can have only one entry per class token. Named string tokens are unlimited.
 
 # Installation
 
