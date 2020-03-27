@@ -1,11 +1,11 @@
-[![License](https://img.shields.io/badge/license-MIT-ff69b4.svg)](https://github.com/kzlekk/ClassyFlux/raw/master/LICENSE)
-[![Build Status](https://travis-ci.com/HereMobilityDevelopers/micro-di.svg?branch=master)](https://travis-ci.com/HereMobilityDevelopers/micro-di)
-[![Coverage Status](https://coveralls.io/repos/github/HereMobilityDevelopers/micro-di/badge.svg?branch=master)](https://coveralls.io/github/HereMobilityDevelopers/micro-di?branch=master)
-
 # micro-di
 
 A lightweight, minimal module for allowing dependency-injection in your frontend app.
 Written in [TypeScript](https://www.typescriptlang.org/) and recommended to use mostly in TypeScript projects that care about artifact size.
+
+[![License](https://img.shields.io/badge/license-MIT-ff69b4.svg)](https://github.com/kzlekk/ClassyFlux/raw/master/LICENSE)
+[![Build Status](https://travis-ci.com/HereMobilityDevelopers/micro-di.svg?branch=master)](https://travis-ci.com/HereMobilityDevelopers/micro-di)
+[![Coverage Status](https://coveralls.io/repos/github/HereMobilityDevelopers/micro-di/badge.svg?branch=master)](https://coveralls.io/github/HereMobilityDevelopers/micro-di?branch=master)
 
 # What's in it for me?
 
