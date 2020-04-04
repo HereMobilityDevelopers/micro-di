@@ -50,6 +50,26 @@ class DependencyTwo {
   }
 }
 
+@Dependency()
+class ConfigurableObject {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
+RegisterResolver("factory", (name: string) => new ConfigurableObject(name));
+
+class ConfiguredSubject {
+  @Inject(ConfigurableObject, "That name!")
+  object!: ConfigurableObject;
+
+  getName() {
+    return `That subject: ${this.object.name}`;
+  }
+}
+
 describe("MicroDI", () => {
   describe("Singleton", () => {
     it("resolves singleton to the same instance each time accessed", () => {
@@ -88,18 +108,18 @@ describe("MicroDI", () => {
   describe("RegisterResolver(string))", () => {
     beforeEach(() => {
       RegisterResolver(
-        "RegisterTokenTest",
-        () => new Factory(`RegisterTokenTest#${++FactoryCounter}`)
+          "RegisterTokenTest",
+          () => new Factory(`RegisterTokenTest#${++FactoryCounter}`)
       );
     });
 
     it("registers resolver correctly under string token", () => {
       expect(ResolveDependency<Factory>("RegisterTokenTest").name).toEqual(
-        `RegisterTokenTest#${FactoryCounter}`
+          `RegisterTokenTest#${FactoryCounter}`
       );
       const firstCounter = FactoryCounter;
       expect(ResolveDependency<Factory>("RegisterTokenTest").name).toEqual(
-        `RegisterTokenTest#${FactoryCounter}`
+          `RegisterTokenTest#${FactoryCounter}`
       );
       expect(FactoryCounter).toEqual(firstCounter + 1);
     });
@@ -118,6 +138,33 @@ describe("MicroDI", () => {
       const firstCounter = FactoryCounter;
       expect(ResolveDependency(AnotherFactory).name).toEqual(`RegisterClassTest#${FactoryCounter}`);
       expect(FactoryCounter).toEqual(firstCounter + 1);
+    });
+  });
+
+  describe("Static Parametrised Inject", () => {
+    let subject!: ConfiguredSubject;
+
+    beforeEach(() => {
+      subject = new ConfiguredSubject();
+    });
+
+    it("Injects the new object passing correct params to constructor", () => {
+      expect(subject.getName()).toEqual("That subject: That name!");
+    });
+  });
+
+  describe("Dynamic Parametrised Resolve", () => {
+    let object1!: ConfigurableObject;
+    let object2!: ConfigurableObject;
+
+    beforeEach(() => {
+      object1 = ResolveDependency("factory", "Test1");
+      object2 = ResolveDependency(ConfigurableObject, "Test2");
+    });
+
+    it("Injects the new object passing correct params to constructor", () => {
+      expect(object1.name).toEqual("Test1");
+      expect(object2.name).toEqual("Test2");
     });
   });
 });
