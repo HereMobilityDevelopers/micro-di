@@ -4,24 +4,13 @@ import pkg from './package.json';
 
 export default {
   input: 'src/index.ts',
-  output: [
-
-    {
+  output: [{
       file: pkg.main,
-      name: "microdi",
-      format: 'umd',
-      exports: 'named',
+      format: 'es',
       sourcemap: true
-    }
-  ],
-  external: [
-    ...Object.keys(pkg.dependencies || {})
-  ],
-  watch: {
-    include: 'src/**',
-  },
+  }],
   plugins: [
-    typescript(),
-    terser()
+      typescript(),
+      terser()
   ]
 };

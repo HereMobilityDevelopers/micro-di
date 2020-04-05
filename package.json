@@ -1,13 +1,13 @@
 {
   "name": "@here-mobility/micro-di",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/HereMobilityDevelopers/micro-di.git"
   },
   "homepage": "https://github.com/HereMobilityDevelopers/micro-di",
   "license": "MIT",
-  "main": "lib/index.es.js",
+  "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
     "build": "rollup -c && tsc",
