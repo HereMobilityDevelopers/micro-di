@@ -58,13 +58,13 @@ import { SomeFactory } from "some-factory.js";
 RegisterDependency(SomeFactory, () => new SomeFactory("param"))
 ```
 
-Register `SomeClass` using `RegisterInstance` method. `RegisterInstance` registers a resolver function which will be resolved to the constructed instance the first time `SomeClass` dependency is accessed. After the first time, the resolved instance will be stored in the container and subsequent access to `SomeClass` will always return the same instance as a Singleton.
+Register `SomeClass` using `RegisterSingleton` method. `RegisterSingleton` registers a resolver function which will be resolved to the constructed instance the first time `SomeClass` dependency is accessed. After the first time, the resolved instance will be stored in the container and subsequent access to `SomeClass` will always return the same instance as a Singleton.
 
 ```js
-import { RegisterInstance } from "@here-mobility/micro-di";
+import { RegisterSingleton } from "@here-mobility/micro-di";
 import { SomeClass } from "some-class.js";
 
-RegisterInstance(SomeClass, () => new SomeClass("param"))
+RegisterSingleton(SomeClass, () => new SomeClass("param"))
 ```
 
 It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Dependency` decorator registers resolver function as is:
@@ -131,7 +131,7 @@ class DependantClass {
 
 ### Overriding Dependencies in tests
 
-Dependencies in unit tests can be simply overridden with relevant mocks without touching the properties of the actual object under test. Use `OverrideResolver` and `OverrideInstance` methods where applicable accordingly:
+Dependencies in unit tests can be simply overridden with relevant mocks without touching the properties of the actual object under test. Use `OverrideResolver` and `OverrideSingleton` methods where applicable accordingly:
 
 Example of `register-mocks.js`:
 
@@ -140,7 +140,7 @@ import { MockFactory, MockLocator } from "mocks"
 import { Locator } from "locator.js";
 import { NameFactory } from "named-factory.js";
 
-OverrideInstance(Locator, () => new MockLocator());
+OverrideSingleton(Locator, () => new MockLocator());
 OverrideResolver(NameFactory, () => new MockFactory());
 ```
 

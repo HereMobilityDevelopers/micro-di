@@ -39,13 +39,13 @@ export function OverrideResolver<T, R>(token: Constructible<T> | string, resolve
  * Provided constructor will be called first time the dependency accessed and
  * constructed instance will be returned on any subsequent resolution.
  */
-export function RegisterInstance<T>(token: Constructible<T> | string, resolver: Resolver<T>) {
+export function RegisterSingleton<T>(token: Constructible<T> | string, resolver: Resolver<T>) {
   if (!getResolver(token)) {
     setResolver(token, resolveOnce(token, resolver));
   }
 }
 
-export function OverrideInstance<T, R>(token: Constructible<T> | string, resolver: Resolver<R>) {
+export function OverrideSingleton<T, R>(token: Constructible<T> | string, resolver: Resolver<R>) {
   setResolver(token, resolveOnce(token, resolver));
 }
 
@@ -70,7 +70,7 @@ export function Dependency(resolver?: Resolver<any>) {
  */
 export function Singleton(resolver?: Resolver<any>) {
   return function<T>(target: Constructible<T>) {
-    RegisterInstance(target, resolver || ((...args) => new target(...args)));
+    RegisterSingleton(target, resolver || ((...args) => new target(...args)));
   };
 }
 
