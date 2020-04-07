@@ -1,4 +1,4 @@
-import { Dependency, Inject, RegisterResolver, ResolveDependency, Singleton } from "../src";
+import {Dependency, Inject, RegisterResolver, ResolveDependency, Singleton, Transform} from "../src";
 
 let DependencyOneCounter = 0;
 
@@ -59,11 +59,33 @@ class ConfigurableObject {
   }
 }
 
+@Singleton()
+class ConfigurableSingleton {
+  name: string;
+  label: string;
+
+  constructor(name: string, label: string) {
+    this.name = name;
+    this.label = label;
+  }
+}
+
 RegisterResolver("factory", (name: string) => new ConfigurableObject(name));
 
+let externalName = "Initial";
+
 class ConfiguredSubject {
-  @Inject(ConfigurableObject, "That name!")
+  @Inject(ConfigurableObject, () => externalName)
   object!: ConfigurableObject;
+
+  @Inject(ConfigurableSingleton, "Ignored")
+  secondary!: ConfigurableSingleton;
+
+  @Inject(ConfigurableSingleton, "Proper Name", "Right Label")
+  singleton!: ConfigurableSingleton;
+
+  @Transform(ConfigurableObject, subject => subject.name, "Transformed!")
+  transformed!: string;
 
   getName() {
     return `That subject: ${this.object.name}`;
@@ -105,6 +127,18 @@ describe("MicroDI", () => {
     });
   });
 
+  describe("Transform", () => {
+    let subject: ConfiguredSubject;
+
+    beforeEach(() => {
+      subject = new ConfiguredSubject();
+    });
+
+    it("transform the resolved instance and injects transformed value", () => {
+      expect(subject.transformed).toEqual("Transformed!")
+    })
+  });
+
   describe("RegisterResolver(string))", () => {
     beforeEach(() => {
       RegisterResolver(
@@ -141,15 +175,22 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("Static Parametrised Inject", () => {
+  describe("Static and lazy parametrised @Inject", () => {
     let subject!: ConfiguredSubject;
 
     beforeEach(() => {
       subject = new ConfiguredSubject();
+      externalName = "That name!";
     });
 
-    it("Injects the new object passing correct params to constructor", () => {
+    it("injects new object passing correct params to constructor", () => {
       expect(subject.getName()).toEqual("That subject: That name!");
+    });
+
+    it("injects singleton with the arguments passed from the first decorator executed", () => {
+      expect(subject.singleton.name).toEqual("Proper Name");
+      expect(subject.singleton.label).toEqual("Right Label");
+      expect(subject.secondary.name).toEqual("Proper Name");
     });
   });
 
@@ -162,7 +203,7 @@ describe("MicroDI", () => {
       object2 = ResolveDependency(ConfigurableObject, "Test2");
     });
 
-    it("Injects the new object passing correct params to constructor", () => {
+    it("injects the new object passing correct params to constructor", () => {
       expect(object1.name).toEqual("Test1");
       expect(object2.name).toEqual("Test2");
     });
