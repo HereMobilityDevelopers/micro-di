@@ -7,19 +7,18 @@ export type Token<T> = Constructible<T> | string | symbol;
 
 const resolvers = new Map<string | symbol, Resolver<any>>();
 
-function getResolver<T, R extends T>(token: Token<T>): Resolver<R> {
+function getResolver<T, R>(token: Token<T>): Resolver<R> {
   if (typeof token === "string" || typeof token === "symbol")
     return resolvers[token] as Resolver<R>;
   return token.prototype.$dependencyResolver as Resolver<R>;
 }
 
-function setResolver<T, R extends T>(token: Token<T>, resolver: Resolver<R>) {
-  if (typeof token === "string" || typeof token === "symbol")
-    resolvers[token] = resolver;
+function setResolver<T, R>(token: Token<T>, resolver: Resolver<R>) {
+  if (typeof token === "string" || typeof token === "symbol") resolvers[token] = resolver;
   else token.prototype.$dependencyResolver = resolver;
 }
 
-function resolveOnce<T, R extends T>(token: Token<T>, resolve: Resolver<R>) {
+function resolveOnce<T, R>(token: Token<T>, resolve: Resolver<R>) {
   return (...args: any[]) => {
     const instance = resolve(...args);
     OverrideResolver(token, () => instance);
@@ -37,14 +36,11 @@ export interface Constructible<T> {
 /**
  *  Registers a resolver associated with the specified class or string token
  */
-export function RegisterResolver<T>(token: Token<T>, resolver: Resolver<T>) {
+export function RegisterResolver<T, R>(token: Token<T>, resolver: Resolver<R>) {
   if (!getResolver(token)) setResolver(token, resolver);
 }
 
-export function OverrideResolver<T, R extends T>(
-  token: Token<T>,
-  resolver: Resolver<R>
-) {
+export function OverrideResolver<T, R>(token: Token<T>, resolver: Resolver<R>) {
   setResolver(token, resolver);
 }
 
@@ -53,24 +49,21 @@ export function OverrideResolver<T, R extends T>(
  * Provided constructor will be called first time the dependency accessed and
  * constructed instance will be returned on any subsequent resolution.
  */
-export function RegisterSingleton<T>(token: Token<T>, resolver: Resolver<T>) {
+export function RegisterSingleton<T, R>(token: Token<T>, resolver: Resolver<R>) {
   if (!getResolver(token)) {
     setResolver(token, resolveOnce(token, resolver));
   }
 }
 
-export function OverrideSingleton<T, R extends T>(
-  token: Token<T>,
-  resolver: Resolver<R>
-) {
+export function OverrideSingleton<T, R>(token: Token<T>, resolver: Resolver<R>) {
   setResolver(token, resolveOnce(token, resolver));
 }
 
 /**
  *  Resolves an instance associated with specified dependency class or string token
  */
-export function Resolve<T, R extends T>(token: Token<T>, ...args: any[]): R {
-  const resolve: Resolver<R> = getResolver(token);
+export function Resolve<T>(token: Token<T>, ...args: any[]): T {
+  const resolve: Resolver<T> = getResolver(token);
   if (resolve) return resolve(...args);
   throw Error(`Trying to resolve unregistered token: ${token.toString()}`);
 }
@@ -78,10 +71,7 @@ export function Resolve<T, R extends T>(token: Token<T>, ...args: any[]): R {
 /**
  * @deprecated Will be deleted in the next version. Use 'Resolve' instead.
  */
-export function ResolveDependency<T>(
-  token: Constructible<T> | string,
-  ...args: any[]
-) {
+export function ResolveDependency<T>(token: Token<T>, ...args: any[]) {
   return Resolve(token, ...args);
 }
 
@@ -90,10 +80,8 @@ export function ResolveDependency<T>(
  */
 export function Dependency<D>(resolver?: Resolver<D>) {
   return <T extends D>(target: Constructible<T>) => {
-    RegisterResolver(
-      target,
-      resolver || ((...args: any[]) => new target(...args))
-    );
+    const resolve = (resolver as Resolver<T>) || ((...args: any[]) => new target(...args));
+    RegisterResolver(target, resolve);
   };
 }
 
@@ -106,7 +94,7 @@ export function Singleton<S>(resolver?: Resolver<S>) {
   return <T extends S>(target: Constructible<T>) => {
     RegisterSingleton(
       target,
-      resolver || ((...args: any[]) => new target(...args))
+      (resolver as Resolver<T>) || ((...args: any[]) => new target(...args))
     );
   };
 }
@@ -125,7 +113,7 @@ function resolveArguments(args: any[]): any[] {
  * @param token A class or a string token.
  * @param args A list of arguments to be passed to resolver.
  */
-export function Inject<T>(token: Constructible<T> | string, ...args: any[]) {
+export function Inject<T>(token: Token<T>, ...args: any[]) {
   return (target: Object, property: string | symbol) => {
     Object.defineProperty(target, property, {
       get: () => Resolve(token, ...resolveArguments(args)),

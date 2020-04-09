@@ -1,6 +1,6 @@
 {
   "name": "@here-mobility/micro-di",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/HereMobilityDevelopers/micro-di.git"
@@ -34,7 +34,7 @@
     "rollup-plugin-typescript2": "^0.26.0",
     "ts-jest": "^25.3.1",
     "tslib": "^1.11.1",
-    "typescript": "^3.8.3"
+    "typescript": "~3.5.3"
   },
   "files": [
     "lib/**/*"

@@ -1,11 +1,4 @@
-import {
-  Dependency,
-  Inject,
-  RegisterResolver,
-  Resolve,
-  Singleton,
-  MapInject
-} from "../src";
+import { Dependency, Inject, RegisterResolver, Resolve, Singleton, MapInject } from "../src";
 
 let DependencyOneCounter = 0;
 
@@ -155,11 +148,11 @@ describe("MicroDI", () => {
     });
 
     it("registers resolver correctly under string token", () => {
-      expect(Resolve<Factory, Factory>("RegisterTokenTest").name).toEqual(
+      expect(Resolve<Factory>("RegisterTokenTest").name).toEqual(
         `RegisterTokenTest#${FactoryCounter}`
       );
       const firstCounter = FactoryCounter;
-      expect(Resolve<Factory, Factory>("RegisterTokenTest").name).toEqual(
+      expect(Resolve<Factory>("RegisterTokenTest").name).toEqual(
         `RegisterTokenTest#${FactoryCounter}`
       );
       expect(FactoryCounter).toEqual(firstCounter + 1);
@@ -175,13 +168,9 @@ describe("MicroDI", () => {
     });
 
     it("registers resolver correctly under class token", () => {
-      expect(Resolve(AnotherFactory).name).toEqual(
-        `RegisterClassTest#${FactoryCounter}`
-      );
+      expect(Resolve(AnotherFactory).name).toEqual(`RegisterClassTest#${FactoryCounter}`);
       const firstCounter = FactoryCounter;
-      expect(Resolve(AnotherFactory).name).toEqual(
-        `RegisterClassTest#${FactoryCounter}`
-      );
+      expect(Resolve(AnotherFactory).name).toEqual(`RegisterClassTest#${FactoryCounter}`);
       expect(FactoryCounter).toEqual(firstCounter + 1);
     });
   });

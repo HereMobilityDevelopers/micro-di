@@ -75,7 +75,7 @@ import { Dependency } from "@here-mobility/micro-di";
 const counter = 0;
 
 @Dependency(() => new NameFactory())
-@Dependency("NameFactory") // Can register multiple distinct dependencies
+@Dependency("NameFactory") // Register multiple distinct dependencies
 class NameFactory {
   getName() {
     return `Token#${counter}`
@@ -105,6 +105,7 @@ import { Resolve } from "@here-mobility/micro-di";
 import { NameFactory } from "named-factory.js";
 
 const instance = Resolve(NameFactory);
+const second = Resolve<NameFactory>("NameFactory"); // String token can be resolved to any type
 
 ```
 
