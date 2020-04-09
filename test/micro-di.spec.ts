@@ -1,4 +1,11 @@
-import {Dependency, Inject, RegisterResolver, ResolveDependency, Singleton, Transform} from "../src";
+import {
+  Dependency,
+  Inject,
+  RegisterResolver,
+  Resolve,
+  Singleton,
+  MapInject
+} from "../src";
 
 let DependencyOneCounter = 0;
 
@@ -84,8 +91,8 @@ class ConfiguredSubject {
   @Inject(ConfigurableSingleton, "Proper Name", "Right Label")
   singleton!: ConfigurableSingleton;
 
-  @Transform(ConfigurableObject, subject => subject.name, "Transformed!")
-  transformed!: string;
+  @MapInject(AnotherFactory, subject => subject.name)
+  mappedName!: string;
 
   getName() {
     return `That subject: ${this.object.name}`;
@@ -95,11 +102,11 @@ class ConfiguredSubject {
 describe("MicroDI", () => {
   describe("Singleton", () => {
     it("resolves singleton to the same instance each time accessed", () => {
-      expect(ResolveDependency(DependencyOne).name).toEqual(`SingletonOne#1`);
-      expect(ResolveDependency(DependencyOne).name).toEqual(`SingletonOne#1`);
+      expect(Resolve(DependencyOne).name).toEqual(`SingletonOne#1`);
+      expect(Resolve(DependencyOne).name).toEqual(`SingletonOne#1`);
       expect(DependencyOneCounter).toEqual(1);
-      expect(ResolveDependency(DependencyTwo).name).toEqual(`SingletonTwo#1`);
-      expect(ResolveDependency(DependencyTwo).name).toEqual(`SingletonTwo#1`);
+      expect(Resolve(DependencyTwo).name).toEqual(`SingletonTwo#1`);
+      expect(Resolve(DependencyTwo).name).toEqual(`SingletonTwo#1`);
       expect(DependencyTwoCounter).toEqual(1);
     });
   });
@@ -108,7 +115,7 @@ describe("MicroDI", () => {
     let subject: DependencyTwo;
 
     beforeEach(() => {
-      subject = ResolveDependency(DependencyTwo);
+      subject = Resolve(DependencyTwo);
     });
 
     it("can resolve singleton dependency by accessing property getter", () => {
@@ -127,33 +134,33 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("Transform", () => {
+  describe("MapInject", () => {
     let subject: ConfiguredSubject;
 
     beforeEach(() => {
       subject = new ConfiguredSubject();
     });
 
-    it("transform the resolved instance and injects transformed value", () => {
-      expect(subject.transformed).toEqual("Transformed!")
-    })
+    it("maps the resolved instance and injects mapped value", () => {
+      expect(subject.mappedName).toEqual(`RegisterClassTest#${FactoryCounter}`);
+    });
   });
 
   describe("RegisterResolver(string))", () => {
     beforeEach(() => {
       RegisterResolver(
-          "RegisterTokenTest",
-          () => new Factory(`RegisterTokenTest#${++FactoryCounter}`)
+        "RegisterTokenTest",
+        () => new Factory(`RegisterTokenTest#${++FactoryCounter}`)
       );
     });
 
     it("registers resolver correctly under string token", () => {
-      expect(ResolveDependency<Factory>("RegisterTokenTest").name).toEqual(
-          `RegisterTokenTest#${FactoryCounter}`
+      expect(Resolve<Factory, Factory>("RegisterTokenTest").name).toEqual(
+        `RegisterTokenTest#${FactoryCounter}`
       );
       const firstCounter = FactoryCounter;
-      expect(ResolveDependency<Factory>("RegisterTokenTest").name).toEqual(
-          `RegisterTokenTest#${FactoryCounter}`
+      expect(Resolve<Factory, Factory>("RegisterTokenTest").name).toEqual(
+        `RegisterTokenTest#${FactoryCounter}`
       );
       expect(FactoryCounter).toEqual(firstCounter + 1);
     });
@@ -168,14 +175,18 @@ describe("MicroDI", () => {
     });
 
     it("registers resolver correctly under class token", () => {
-      expect(ResolveDependency(AnotherFactory).name).toEqual(`RegisterClassTest#${FactoryCounter}`);
+      expect(Resolve(AnotherFactory).name).toEqual(
+        `RegisterClassTest#${FactoryCounter}`
+      );
       const firstCounter = FactoryCounter;
-      expect(ResolveDependency(AnotherFactory).name).toEqual(`RegisterClassTest#${FactoryCounter}`);
+      expect(Resolve(AnotherFactory).name).toEqual(
+        `RegisterClassTest#${FactoryCounter}`
+      );
       expect(FactoryCounter).toEqual(firstCounter + 1);
     });
   });
 
-  describe("Static and lazy parametrised @Inject", () => {
+  describe("Static and lazy parametrised injection", () => {
     let subject!: ConfiguredSubject;
 
     beforeEach(() => {
@@ -194,13 +205,13 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("Dynamic Parametrised Resolve", () => {
+  describe("Dynamic parametrised resolution", () => {
     let object1!: ConfigurableObject;
     let object2!: ConfigurableObject;
 
     beforeEach(() => {
-      object1 = ResolveDependency("factory", "Test1");
-      object2 = ResolveDependency(ConfigurableObject, "Test2");
+      object1 = Resolve("factory", "Test1");
+      object2 = Resolve(ConfigurableObject, "Test2");
     });
 
     it("injects the new object passing correct params to constructor", () => {

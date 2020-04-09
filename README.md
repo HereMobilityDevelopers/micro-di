@@ -98,13 +98,13 @@ class Locator {
 
 ### Dependency Resolution
 
-Dependency can be resolved by using `ResolveDependency` method. This can be done anywhere in your application code:
+Dependency can be resolved by using `Resolve` method. This can be done anywhere in your application code:
 
 ```js
-import { ResolveDependency } from "@here-mobility/micro-di";
+import { Resolve } from "@here-mobility/micro-di";
 import { NameFactory } from "named-factory.js";
 
-const instance = ResolveDependency(NameFactory);
+const instance = Resolve(NameFactory);
 
 ```
 
@@ -153,7 +153,7 @@ import { MockFactory } from "mocks"
 
 describe("DependantClass", () => {
   const testedClass = DependantClass();
-  const mockFactory = ResolveDependency("NameFactory") as MockFactory;
+  const mockFactory = Resolve("NameFactory") as MockFactory;
 
   it("can be named", () => {
     testedClass.giveName();

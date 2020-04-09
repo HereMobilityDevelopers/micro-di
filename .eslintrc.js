@@ -3,12 +3,20 @@ module.exports = {
   env: {
     node: true
   },
-  parserOptions: {
-    parser: "@typescript-eslint/parser"
+  parser: '@typescript-eslint/parser',
+  extends: [
+    "plugin:prettier/recommended",
+  ],
+  parserOptions:  {
+    ecmaVersion:  2018,
+    sourceType:  'module',
+  },
+  rules: {
+    "no-else-return": ['warn', { allowElseIf: false }],
   },
   overrides: [
     {
-      files: ["**/__tests__/*.{j,t}s?(x)", "**/tests/unit/**/*.spec.{j,t}s?(x)"],
+      files: ["**/test/*.spec.ts"],
       env: {
         jest: true
       }
