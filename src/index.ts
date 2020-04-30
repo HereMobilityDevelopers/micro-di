@@ -148,17 +148,17 @@ function injectOnce<T, R extends Object>(
   property: string | symbol,
   ...args: any[]
 ) {
-  const resolver = () => {
-    const instance = Resolve(token, ...resolveArguments(args));
-    Object.defineProperty(target, property, {
-      value: instance,
-      writable: false,
-      enumerable: true,
-      configurable: true
-    });
-  };
+
   Object.defineProperty(target, property, {
-    get: () => resolver(),
+    get: () => {
+      const instance = Resolve(token, ...resolveArguments(args));
+      Object.defineProperty(target, property, {
+        get: () => instance,
+        enumerable: true,
+        configurable: true
+      });
+      return instance;
+    },
     enumerable: true,
     configurable: true
   });

@@ -1,4 +1,12 @@
-import { Dependency, Inject, RegisterResolver, Resolve, Singleton, MapInject } from "../src";
+import {
+  Dependency,
+  Inject,
+  RegisterResolver,
+  Resolve,
+  Singleton,
+  MapInject,
+  Produce
+} from "../src";
 
 let DependencyOneCounter = 0;
 
@@ -84,6 +92,9 @@ class ConfiguredSubject {
   @Inject(ConfigurableSingleton, "Proper Name", "Right Label")
   singleton!: ConfigurableSingleton;
 
+  @Produce(Factory)
+  produced!: Factory;
+
   @MapInject(AnotherFactory, subject => subject.name)
   mappedName!: string;
 
@@ -124,6 +135,24 @@ describe("MicroDI", () => {
       const firstCounter = FactoryCounter;
       expect(subject.factory.name).toEqual(`Instance#${FactoryCounter}`);
       expect(FactoryCounter).toEqual(firstCounter + 1);
+    });
+  });
+
+  describe("Produce", () => {
+    let subject: ConfiguredSubject;
+    let expectedName: string;
+
+    beforeAll(() => {
+      subject = new ConfiguredSubject();
+      expectedName = `Instance#${FactoryCounter + 1}`;
+    });
+
+    it("can produce factory instance by accessing property getter", () => {
+      expect(subject.produced.name).toEqual(expectedName);
+    });
+
+    it("next time property getter resolves to the same instance", () => {
+      expect(subject.produced.name).toEqual(expectedName);
     });
   });
 
