@@ -142,28 +142,6 @@ export function MapInject<T, R>(
   };
 }
 
-function injectOnce<T, R extends Object>(
-  token: Token<T>,
-  target: R,
-  property: string | symbol,
-  ...args: any[]
-) {
-
-  Object.defineProperty(target, property, {
-    get: () => {
-      const instance = Resolve(token, ...resolveArguments(args));
-      Object.defineProperty(target, property, {
-        get: () => instance,
-        enumerable: true,
-        configurable: true
-      });
-      return instance;
-    },
-    enumerable: true,
-    configurable: true
-  });
-}
-
 /**
  * A property decorator that resolves the instance of specified dependency
  * only once and provides the resolved instance as a value of designated property.
@@ -176,7 +154,18 @@ function injectOnce<T, R extends Object>(
  */
 export function Produce<T>(token: Token<T>, ...args: any[]) {
   return (target: Object, property: string | symbol) => {
-    return injectOnce(token, target, property, args);
+    Object.defineProperty(target, property, {
+      get: () => {
+        const instance = Resolve(token, ...resolveArguments(args));
+        Object.defineProperty(target, property, {
+          get: () => instance,
+          enumerable: true,
+          configurable: true
+        });
+        return instance;
+      },
+      enumerable: true,
+      configurable: true
+    });
   };
 }
-
