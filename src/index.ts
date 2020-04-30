@@ -69,13 +69,6 @@ export function Resolve<T>(token: Token<T>, ...args: any[]): T {
 }
 
 /**
- * @deprecated Will be deleted in the next version. Use 'Resolve' instead.
- */
-export function ResolveDependency<T>(token: Token<T>, ...args: any[]) {
-  return Resolve(token, ...args);
-}
-
-/**
  *  A class decorator that registers designated class as an injectable dependency.
  */
 export function Dependency<D>(resolver?: Resolver<D>) {
@@ -105,10 +98,10 @@ function resolveArguments(args: any[]): any[] {
 
 /**
  * A property decorator that resolves and injects the resolved instance
- * of specified dependency to designated property. Optional list of arguments
- * could be passed to the resolver. When a function passed as an argument, it
- * will treated as a lazy argument resolver and will be automatically resolved
- * upon injection.
+ * of specified dependency to designated property each time the property is
+ * accessed. Optional list of arguments could be passed to the resolver.
+ * When a function passed as an argument, it will be treated as a lazy argument
+ * resolver and will be automatically resolved upon injection.
  *
  * @param token A class or a string token.
  * @param args A list of arguments to be passed to resolver.
@@ -125,10 +118,10 @@ export function Inject<T>(token: Token<T>, ...args: any[]) {
 
 /**
  * A property decorator that resolves instance of specified dependency
- * and injects mapped object to designated property. Optional list of arguments
- * could be passed to the resolver. When a function passed as an argument, it
- * will treated as a lazy argument resolver and will be automatically resolved
- * upon injection.
+ * and injects mapped object to designated property each time the property is
+ * accessed. Optional list of arguments could be passed to the resolver.
+ * When a function passed as an argument, it will treated as a lazy argument
+ * resolver and will be automatically resolved upon injection.
  *
  *
  * @param token A class or a string token.
@@ -149,13 +142,41 @@ export function MapInject<T, R>(
   };
 }
 
-/**
- * @deprecated Will be deleted in the next version. Use 'MapInject' instead.
- */
-export function Transform<T>(
-  token: Constructible<T> | string,
-  transform: (dependency: T) => any,
+function injectOnce<T, R extends Object>(
+  token: Token<T>,
+  target: R,
+  property: string | symbol,
   ...args: any[]
 ) {
-  return MapInject(token, transform, ...args);
+  const resolver = () => {
+    const instance = Resolve(token, ...resolveArguments(args));
+    Object.defineProperty(target, property, {
+      value: instance,
+      writable: false,
+      enumerable: true,
+      configurable: true
+    });
+  };
+  Object.defineProperty(target, property, {
+    get: () => resolver(),
+    enumerable: true,
+    configurable: true
+  });
 }
+
+/**
+ * A property decorator that resolves the instance of specified dependency
+ * only once and provides the resolved instance as a value of designated property.
+ * Optional list of arguments could be passed to the resolver. When a function
+ * passed as an argument, it will treated as a lazy argument resolver and will be
+ * automatically resolved upon injection.
+ *
+ * @param token A class or a string token.
+ * @param args A list of arguments to be passed to resolver.
+ */
+export function Produce<T>(token: Token<T>, ...args: any[]) {
+  return (target: Object, property: string | symbol) => {
+    return injectOnce(token, target, property, args);
+  };
+}
+
