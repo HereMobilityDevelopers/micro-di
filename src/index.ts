@@ -3,7 +3,7 @@
  */
 export type Resolver<T> = (...args: any[]) => T;
 
-export type Token<T> = Constructible<T> | string | symbol;
+export type Token<T> = Constructable<T> | string | symbol;
 
 const resolvers = new Map<string | symbol, Resolver<any>>();
 
@@ -29,7 +29,7 @@ function resolveOnce<T, R>(token: Token<T>, resolve: Resolver<R>) {
 /**
  *  An interface wrapper for constructable type
  */
-export interface Constructible<T> {
+export interface Constructable<T> {
   new (...args: any[]): T;
 }
 
@@ -69,10 +69,10 @@ export function Resolve<T>(token: Token<T>, ...args: any[]): T {
 }
 
 /**
- *  A class decorator that registers designated class as an injectable dependency.
+ *  A class decorator that registers designated class as an resolvable dependency.
  */
-export function Dependency<D>(resolver?: Resolver<D>) {
-  return <T extends D>(target: Constructible<T>) => {
+export function Resolvable<D>(resolver?: Resolver<D>) {
+  return <T extends D>(target: Constructable<T>) => {
     const resolve = (resolver as Resolver<T>) || ((...args: any[]) => new target(...args));
     RegisterResolver(target, resolve);
   };
@@ -84,7 +84,7 @@ export function Dependency<D>(resolver?: Resolver<D>) {
  * constructed instance will be returned on any subsequent resolution.
  */
 export function Singleton<S>(resolver?: Resolver<S>) {
-  return <T extends S>(target: Constructible<T>) => {
+  return <T extends S>(target: Constructable<T>) => {
     RegisterSingleton(
       target,
       (resolver as Resolver<T>) || ((...args: any[]) => new target(...args))
@@ -96,6 +96,14 @@ function resolveArguments(args: any[]): any[] {
   return args.map(arg => (arg instanceof Function ? arg() : arg));
 }
 
+function defineDynamicProperty<T>(target: Object, property: string | symbol, resolver: () => T) {
+  Object.defineProperty(target, property, {
+    get: resolver,
+    enumerable: true,
+    configurable: true
+  });
+}
+
 /**
  * A property decorator that resolves and injects the resolved instance
  * of specified dependency to designated property each time the property is
@@ -104,15 +112,11 @@ function resolveArguments(args: any[]): any[] {
  * resolver and will be automatically resolved upon injection.
  *
  * @param token A class or a string token.
- * @param args A list of arguments to be passed to resolver.
+ * @param args A list of the arguments to be passed to the resolver.
  */
-export function Inject<T>(token: Token<T>, ...args: any[]) {
+export function Dynamic<T>(token: Token<T>, ...args: any[]) {
   return (target: Object, property: string | symbol) => {
-    Object.defineProperty(target, property, {
-      get: () => Resolve(token, ...resolveArguments(args)),
-      enumerable: true,
-      configurable: true
-    });
+    defineDynamicProperty(target, property, () => Resolve(token, ...resolveArguments(args)));
   };
 }
 
@@ -126,20 +130,34 @@ export function Inject<T>(token: Token<T>, ...args: any[]) {
  *
  * @param token A class or a string token.
  * @param transform A function that transforms the injected instance to another object
- * @param args A list of arguments to be passed to resolver.
+ * @param args A list the of arguments to be passed to the resolver.
  */
-export function MapInject<T, R>(
-  token: Constructible<T> | string,
-  transform: (target: T) => R,
+export function DynamicMap<T, M>(
+  token: Constructable<T> | string,
+  transform: (target: T) => M,
   ...args: any[]
 ) {
   return (target: Object, property: string | symbol) => {
-    Object.defineProperty(target, property, {
-      get: () => transform(Resolve(token, ...resolveArguments(args))),
-      enumerable: true,
-      configurable: true
-    });
+    defineDynamicProperty(target, property, () =>
+      transform(Resolve(token, ...resolveArguments(args)))
+    );
   };
+}
+
+function defineLazyProperty<T>(target: Object, property: string | symbol, resolver: () => T) {
+  Object.defineProperty(target, property, {
+    get: () => {
+      const instance = resolver();
+      Object.defineProperty(target, property, {
+        get: () => instance,
+        enumerable: true,
+        configurable: true
+      });
+      return instance;
+    },
+    enumerable: true,
+    configurable: true
+  });
 }
 
 /**
@@ -150,22 +168,33 @@ export function MapInject<T, R>(
  * automatically resolved upon injection.
  *
  * @param token A class or a string token.
- * @param args A list of arguments to be passed to resolver.
+ * @param args A list of the arguments to be passed to the resolver.
  */
-export function Produce<T>(token: Token<T>, ...args: any[]) {
+export function Lazy<T>(token: Token<T>, ...args: any[]) {
   return (target: Object, property: string | symbol) => {
-    Object.defineProperty(target, property, {
-      get: () => {
-        const instance = Resolve(token, ...resolveArguments(args));
-        Object.defineProperty(target, property, {
-          get: () => instance,
-          enumerable: true,
-          configurable: true
-        });
-        return instance;
-      },
-      enumerable: true,
-      configurable: true
-    });
+    defineLazyProperty(target, property, () => Resolve(token, ...resolveArguments(args)));
+  };
+}
+
+/**
+ * A property decorator that resolves instance of specified dependency
+ * and injects mapped object to designated property only once when the property
+ * is accessed the first time. Optional list of arguments could be passed to the
+ * resolver. When a function passed as an argument, it will treated as a lazy
+ * argument resolver and will be automatically resolved upon injection.
+ *
+ * @param token A class or a string token.
+ * @param transform A function that transforms the injected instance to another object
+ * @param args A list of the arguments to be passed to the resolver.
+ */
+export function LazyMap<T, M>(
+  token: Constructable<T> | string,
+  transform: (target: T) => M,
+  ...args: any[]
+) {
+  return (target: Object, property: string | symbol) => {
+    defineLazyProperty(target, property, () =>
+      transform(Resolve(token, ...resolveArguments(args)))
+    );
   };
 }

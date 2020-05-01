@@ -1,110 +1,16 @@
 import {
-  Dependency,
-  Inject,
+  Resolvable,
+  Dynamic,
   RegisterResolver,
   Resolve,
   Singleton,
-  MapInject,
-  Produce
+  DynamicMap,
+  Lazy,
+  LazyMap
 } from "../src";
 
-let DependencyOneCounter = 0;
-
-@Singleton()
-class DependencyOne {
-  static counter = 0;
-
-  name: string;
-
-  constructor() {
-    this.name = `SingletonOne#${++DependencyOneCounter}`;
-  }
-}
-
-let FactoryCounter = 0;
-
-@Dependency(() => new Factory(`Instance#${++FactoryCounter}`))
-class Factory {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-@Dependency(() => new AnotherFactory(`RegisterClassTest#${++FactoryCounter}`))
-class AnotherFactory {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-let DependencyTwoCounter = 0;
-
-@Singleton(() => new DependencyTwo(`SingletonTwo#${++DependencyTwoCounter}`))
-class DependencyTwo {
-  name: string;
-
-  @Inject(DependencyOne)
-  dependency!: DependencyOne;
-
-  @Inject(Factory)
-  factory!: Factory;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-@Dependency()
-class ConfigurableObject {
-  name: string;
-
-  constructor(name: string) {
-    this.name = name;
-  }
-}
-
-@Singleton()
-class ConfigurableSingleton {
-  name: string;
-  label: string;
-
-  constructor(name: string, label: string) {
-    this.name = name;
-    this.label = label;
-  }
-}
-
-RegisterResolver("factory", (name: string) => new ConfigurableObject(name));
-
-let externalName = "Initial";
-
-class ConfiguredSubject {
-  @Inject(ConfigurableObject, () => externalName)
-  object!: ConfigurableObject;
-
-  @Inject(ConfigurableSingleton, "Ignored")
-  secondary!: ConfigurableSingleton;
-
-  @Inject(ConfigurableSingleton, "Proper Name", "Right Label")
-  singleton!: ConfigurableSingleton;
-
-  @Produce(Factory)
-  produced!: Factory;
-
-  @MapInject(AnotherFactory, subject => subject.name)
-  mappedName!: string;
-
-  getName() {
-    return `That subject: ${this.object.name}`;
-  }
-}
-
 describe("MicroDI", () => {
-  describe("Singleton", () => {
+  describe("@Singleton", () => {
     it("resolves singleton to the same instance each time accessed", () => {
       expect(Resolve(DependencyOne).name).toEqual(`SingletonOne#1`);
       expect(Resolve(DependencyOne).name).toEqual(`SingletonOne#1`);
@@ -115,14 +21,14 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("Inject", () => {
+  describe("@Dynamic", () => {
     let subject: DependencyTwo;
 
     beforeEach(() => {
       subject = Resolve(DependencyTwo);
     });
 
-    it("can resolve singleton dependency by accessing property getter", () => {
+    it("resolves property value by accessing property getter", () => {
       expect(subject.dependency.name).toEqual(`SingletonOne#1`);
     });
 
@@ -130,7 +36,7 @@ describe("MicroDI", () => {
       expect(subject.dependency.name).toEqual(`SingletonOne#1`);
     });
 
-    it("successfully injected factory resolver to property getter", () => {
+    it("resolves factory dependency to new instance each time when accessing property getter", () => {
       expect(subject.factory.name).toEqual(`Instance#${FactoryCounter}`);
       const firstCounter = FactoryCounter;
       expect(subject.factory.name).toEqual(`Instance#${FactoryCounter}`);
@@ -138,7 +44,7 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("Produce", () => {
+  describe("@Lazy", () => {
     let subject: ConfiguredSubject;
     let expectedName: string;
 
@@ -147,7 +53,7 @@ describe("MicroDI", () => {
       expectedName = `Instance#${FactoryCounter + 1}`;
     });
 
-    it("can produce factory instance by accessing property getter", () => {
+    it("resolves property value by accessing property getter", () => {
       expect(subject.produced.name).toEqual(expectedName);
     });
 
@@ -156,7 +62,7 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("MapInject", () => {
+  describe("@DynamicMap", () => {
     let subject: ConfiguredSubject;
 
     beforeEach(() => {
@@ -165,6 +71,24 @@ describe("MicroDI", () => {
 
     it("maps the resolved instance and injects mapped value", () => {
       expect(subject.mappedName).toEqual(`RegisterClassTest#${FactoryCounter}`);
+    });
+  });
+
+  describe("@LazyMap", () => {
+    let subject: ConfiguredSubject;
+    let expectedName: string;
+
+    beforeAll(() => {
+      expectedName = `Instance#${FactoryCounter + 1}`;
+      subject = new ConfiguredSubject();
+    });
+
+    it("maps the resolved instance and injects mapped value", () => {
+      expect(subject.lazyMapped).toEqual(expectedName);
+    });
+
+    it("returns the same value when accessed next time", () => {
+      expect(subject.lazyMapped).toEqual(expectedName);
     });
   });
 
@@ -188,7 +112,7 @@ describe("MicroDI", () => {
     });
   });
 
-  describe("RegisterResolver(Dependency<T>))", () => {
+  describe("RegisterResolver(Resolvable<T>))", () => {
     beforeEach(() => {
       RegisterResolver(
         AnotherFactory,
@@ -238,3 +162,101 @@ describe("MicroDI", () => {
     });
   });
 });
+
+let DependencyOneCounter = 0;
+
+@Singleton()
+class DependencyOne {
+  static counter = 0;
+
+  name: string;
+
+  constructor() {
+    this.name = `SingletonOne#${++DependencyOneCounter}`;
+  }
+}
+
+let FactoryCounter = 0;
+
+@Resolvable(() => new Factory(`Instance#${++FactoryCounter}`))
+class Factory {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
+@Resolvable(() => new AnotherFactory(`RegisterClassTest#${++FactoryCounter}`))
+class AnotherFactory {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
+let DependencyTwoCounter = 0;
+
+@Singleton(() => new DependencyTwo(`SingletonTwo#${++DependencyTwoCounter}`))
+class DependencyTwo {
+  name: string;
+
+  @Dynamic(DependencyOne)
+  dependency!: DependencyOne;
+
+  @Dynamic(Factory)
+  factory!: Factory;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
+@Resolvable()
+class ConfigurableObject {
+  name: string;
+
+  constructor(name: string) {
+    this.name = name;
+  }
+}
+
+@Singleton()
+class ConfigurableSingleton {
+  name: string;
+  label: string;
+
+  constructor(name: string, label: string) {
+    this.name = name;
+    this.label = label;
+  }
+}
+
+RegisterResolver("factory", (name: string) => new ConfigurableObject(name));
+
+let externalName = "Initial";
+
+class ConfiguredSubject {
+  @Dynamic(ConfigurableObject, () => externalName)
+  object!: ConfigurableObject;
+
+  @Dynamic(ConfigurableSingleton, "Ignored")
+  secondary!: ConfigurableSingleton;
+
+  @Dynamic(ConfigurableSingleton, "Proper Name", "Right Label")
+  singleton!: ConfigurableSingleton;
+
+  @Lazy(Factory)
+  produced!: Factory;
+
+  @DynamicMap(AnotherFactory, subject => subject.name)
+  mappedName!: string;
+
+  @LazyMap(Factory, subject => subject.name)
+  lazyMapped!: string;
+
+  getName() {
+    return `That subject: ${this.object.name}`;
+  }
+}
