@@ -67,15 +67,15 @@ import { SomeClass } from "some-class.js";
 RegisterSingleton(SomeClass, () => new SomeClass("param"))
 ```
 
-It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Dependency` decorator registers resolver function as is:
+It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Resolvable` decorator registers resolver function as is:
 
 ```js
-import { Dependency } from "@here-mobility/micro-di";
+import { Resolvable } from "@here-mobility/micro-di";
 
 const counter = 0;
 
-@Dependency(() => new NameFactory())
-@Dependency("NameFactory") // Register multiple distinct dependencies
+@Resolvable(() => new NameFactory())
+@Resolvable("NameFactory") // Register multiple distinct dependencies
 class NameFactory {
   getName() {
     return `Token#${counter}`
@@ -109,17 +109,17 @@ const second = Resolve<NameFactory>("NameFactory"); // String token can be resol
 
 ```
 
-Dependency can also be injected by using experimental-decorator `Inject`:
+Dependency can also be injected by using experimental-decorator `Dynamic` or `Lazy`:
 
 ```typescript
-import { Inject } from "@here-mobility/micro-di";
+import { Dynamic, Lazy } from "@here-mobility/micro-di";
 import { Locator } from "locator.js";
 
 class DependantClass {
-  @Inject("NameFactory")
+  @Dynamic("NameFactory")
   factory!: NameFactory;
 
-  @Inject(Locator)
+  @Lazy(Locator)
   private prop!: Locator;
 
   name: string = "noname";
