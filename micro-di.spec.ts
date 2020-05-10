@@ -7,7 +7,7 @@ import {
   DynamicMap,
   Lazy,
   LazyMap
-} from "../src";
+} from "./micro-di";
 
 describe("MicroDI", () => {
   describe("@Singleton", () => {
@@ -49,16 +49,20 @@ describe("MicroDI", () => {
     let expectedName: string;
 
     beforeAll(() => {
-      subject = new ConfiguredSubject();
       expectedName = `Instance#${FactoryCounter + 1}`;
+      subject = new ConfiguredSubject();
     });
 
     it("resolves property value by accessing property getter", () => {
-      expect(subject.produced.name).toEqual(expectedName);
+      const object = subject.produced;
+      if (object) expect(object.name).toEqual(expectedName);
+      else fail();
     });
 
     it("next time property getter resolves to the same instance", () => {
-      expect(subject.produced.name).toEqual(expectedName);
+      const object = subject.produced;
+      if (object) expect(object.name).toEqual(expectedName);
+      else fail();
     });
   });
 
@@ -133,7 +137,6 @@ describe("MicroDI", () => {
 
     beforeEach(() => {
       subject = new ConfiguredSubject();
-      externalName = "That name!";
     });
 
     it("injects new object passing correct params to constructor", () => {
@@ -235,20 +238,18 @@ class ConfigurableSingleton {
 
 RegisterResolver("factory", (name: string) => new ConfigurableObject(name));
 
-let externalName = "Initial";
-
 class ConfiguredSubject {
-  @Dynamic(ConfigurableObject, () => externalName)
+  @Lazy(ConfigurableObject, "That name!")
   object!: ConfigurableObject;
 
-  @Dynamic(ConfigurableSingleton, "Ignored")
+  @Lazy(ConfigurableSingleton, "Proper Name", "Right Label")
   secondary!: ConfigurableSingleton;
-
-  @Dynamic(ConfigurableSingleton, "Proper Name", "Right Label")
-  singleton!: ConfigurableSingleton;
 
   @Lazy(Factory)
   produced!: Factory;
+
+  @Dynamic(ConfigurableSingleton, "Proper Name", "Right Label")
+  singleton!: ConfigurableSingleton;
 
   @DynamicMap(AnotherFactory, subject => subject.name)
   mappedName!: string;

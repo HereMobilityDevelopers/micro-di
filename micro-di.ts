@@ -1,4 +1,11 @@
 /**
+ *  An interface wrapper for constructable type
+ */
+export interface Constructable<T> {
+  new (...args: any[]): T;
+}
+
+/**
  * A generic resolver type
  */
 export type Resolver<T> = (...args: any[]) => T;
@@ -18,21 +25,6 @@ function setResolver<T, R>(token: Token<T>, resolver: Resolver<R>) {
   else token.prototype.$dependencyResolver = resolver;
 }
 
-function resolveOnce<T, R>(token: Token<T>, resolve: Resolver<R>) {
-  return (...args: any[]) => {
-    const instance = resolve(...args);
-    OverrideResolver(token, () => instance);
-    return instance;
-  };
-}
-
-/**
- *  An interface wrapper for constructable type
- */
-export interface Constructable<T> {
-  new (...args: any[]): T;
-}
-
 /**
  *  Registers a resolver associated with the specified class or string token
  */
@@ -42,6 +34,14 @@ export function RegisterResolver<T, R>(token: Token<T>, resolver: Resolver<R>) {
 
 export function OverrideResolver<T, R>(token: Token<T>, resolver: Resolver<R>) {
   setResolver(token, resolver);
+}
+
+function resolveOnce<T, R>(token: Token<T>, resolve: Resolver<R>) {
+  return (...args: any[]) => {
+    const instance = resolve(...args);
+    OverrideResolver(token, () => instance);
+    return instance;
+  };
 }
 
 /**
@@ -69,6 +69,14 @@ export function Resolve<T>(token: Token<T>, ...args: any[]): T {
 }
 
 /**
+ *  Resolves an instance associated with specified dependency class or string token,
+ *  and trasforms it to another object, based on the resolved instance
+ */
+export function Transform<T, M>(token: Token<T>, transform: (target: T) => M, ...args: any[]): M {
+  return transform(Resolve(token, ...args));
+}
+
+/**
  *  A class decorator that registers designated class as an resolvable dependency.
  */
 export function Resolvable<D>(resolver?: Resolver<D>) {
@@ -92,11 +100,7 @@ export function Singleton<S>(resolver?: Resolver<S>) {
   };
 }
 
-function resolveArguments(args: any[]): any[] {
-  return args.map(arg => (arg instanceof Function ? arg() : arg));
-}
-
-function defineDynamicProperty<T>(target: Object, property: string | symbol, resolver: () => T) {
+function defineDynamicProperty<T>(target: any, property: PropertyKey, resolver: () => T) {
   Object.defineProperty(target, property, {
     get: resolver,
     enumerable: true,
@@ -115,8 +119,8 @@ function defineDynamicProperty<T>(target: Object, property: string | symbol, res
  * @param args A list of the arguments to be passed to the resolver.
  */
 export function Dynamic<T>(token: Token<T>, ...args: any[]) {
-  return (target: Object, property: string | symbol) => {
-    defineDynamicProperty(target, property, () => Resolve(token, ...resolveArguments(args)));
+  return function(target: any, property: string | symbol) {
+    defineDynamicProperty(target, property, () => Resolve(token, ...args));
   };
 }
 
@@ -134,22 +138,20 @@ export function Dynamic<T>(token: Token<T>, ...args: any[]) {
  */
 export function DynamicMap<T, M>(
   token: Constructable<T> | string,
-  transform: (target: T) => M,
+  map: (target: T) => M,
   ...args: any[]
 ) {
-  return (target: Object, property: string | symbol) => {
-    defineDynamicProperty(target, property, () =>
-      transform(Resolve(token, ...resolveArguments(args)))
-    );
+  return function(target: any, property: PropertyKey): void {
+    defineDynamicProperty(target, property, () => Transform(token, map, ...args));
   };
 }
 
-function defineLazyProperty<T>(target: Object, property: string | symbol, resolver: () => T) {
+function defineLazyProperty<T>(target: any, property: PropertyKey, resolver: () => T) {
   Object.defineProperty(target, property, {
     get: () => {
       const instance = resolver();
       Object.defineProperty(target, property, {
-        get: () => instance,
+        value: instance,
         enumerable: true,
         configurable: true
       });
@@ -171,8 +173,8 @@ function defineLazyProperty<T>(target: Object, property: string | symbol, resolv
  * @param args A list of the arguments to be passed to the resolver.
  */
 export function Lazy<T>(token: Token<T>, ...args: any[]) {
-  return (target: Object, property: string | symbol) => {
-    defineLazyProperty(target, property, () => Resolve(token, ...resolveArguments(args)));
+  return function(target: any, property: PropertyKey, _index?: number): void {
+    defineLazyProperty(target, property, () => Resolve(token, ...args));
   };
 }
 
@@ -189,12 +191,10 @@ export function Lazy<T>(token: Token<T>, ...args: any[]) {
  */
 export function LazyMap<T, M>(
   token: Constructable<T> | string,
-  transform: (target: T) => M,
+  map: (target: T) => M,
   ...args: any[]
 ) {
-  return (target: Object, property: string | symbol) => {
-    defineLazyProperty(target, property, () =>
-      transform(Resolve(token, ...resolveArguments(args)))
-    );
+  return function(target: any, property: string | symbol): void {
+    defineLazyProperty(target, property, () => Transform(token, map, ...args));
   };
 }

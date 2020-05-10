@@ -2,8 +2,8 @@
   "compilerOptions": {
     "outDir": "lib",
     "module": "esnext",
-    "target": "es6",
-    "lib": ["es6"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
     "sourceMap": true,
     "allowJs": false,
     "declaration": true,
@@ -19,6 +19,5 @@
     "esModuleInterop": true,
     "experimentalDecorators": true
   },
-  "include": ["src/**/*.ts"],
-  "exclude": []
+  "include": ["micro-di.ts"]
 }

@@ -1,17 +1,18 @@
 {
   "name": "@here-mobility/micro-di",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/HereMobilityDevelopers/micro-di.git"
   },
   "homepage": "https://github.com/HereMobilityDevelopers/micro-di",
   "license": "MIT",
-  "main": "lib/index.es.js",
-  "types": "lib/index.d.ts",
+  "main": "lib/micro-di.es.js",
+  "types": "lib/micro-di.d.ts",
   "scripts": {
     "build": "rollup -c && tsc",
-    "test": "jest --coverage && coveralls < coverage/lcov.info"
+    "test": "jest --coverage && coveralls < coverage/lcov.info",
+    "clean": "jest --clearCache"
   },
   "dependencies": {},
   "devDependencies": {
