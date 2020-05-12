@@ -18,7 +18,10 @@
     "noUnusedParameters": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+    "allowSyntheticDefaultImports": true
   },
-  "include": ["micro-di.ts"]
+  "include": [
+    "src/index.ts"
+  ]
 }

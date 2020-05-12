@@ -10,7 +10,7 @@ import {
   Construct,
   Inject,
   MapInject
-} from "./micro-di";
+} from "../src";
 
 describe("MicroDI", () => {
   describe("@Singleton", () => {

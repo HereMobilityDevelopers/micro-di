@@ -33,9 +33,10 @@ class Injector<T, M> {
 
 function ReflectMetadataIfNeeded<T>(target: Constructable<T>) {
   if (target.prototype.$dependencyInjectors) return;
-  target.prototype.$dependencyInjectors = Reflect.getOwnMetadata("design:paramtypes", target).map(
-    (token: any) => new Injector(token, null, [])
-  );
+  const metadata = Reflect.getOwnMetadata("design:paramtypes", target);
+  target.prototype.$dependencyInjectors = metadata
+    ? metadata.map((token: any) => new Injector(token, null, []))
+    : [];
 }
 
 /**
