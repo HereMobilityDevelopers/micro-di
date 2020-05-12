@@ -1,6 +1,6 @@
 {
   "name": "@here-mobility/micro-di",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/HereMobilityDevelopers/micro-di.git"
@@ -14,7 +14,9 @@
     "test": "jest --coverage && coveralls < coverage/lcov.info",
     "clean": "jest --clearCache"
   },
-  "dependencies": {},
+  "dependencies": {
+    "reflect-metadata": "^0.1.13"
+  },
   "devDependencies": {
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-proposal-decorators": "^7.8.3",

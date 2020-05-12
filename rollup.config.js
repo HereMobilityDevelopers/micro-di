@@ -13,5 +13,6 @@ export default {
       sourcemap: true
     }
   ],
+  external: ["reflect-metadata"],
   plugins: [typescript(), terser()]
 };

@@ -6,7 +6,10 @@ import {
   Singleton,
   DynamicMap,
   Lazy,
-  LazyMap
+  LazyMap,
+  Construct,
+  Inject,
+  MapInject
 } from "./micro-di";
 
 describe("MicroDI", () => {
@@ -164,6 +167,19 @@ describe("MicroDI", () => {
       expect(object2.name).toEqual("Test2");
     });
   });
+
+  describe("Automatic argument resolution", () => {
+    let subject!: DependantSubject;
+
+    beforeEach(() => {
+      subject = Construct(DependantSubject);
+    });
+
+    it("resolves constructor arguments automatically", () => {
+      expect(subject.name).toEqual("SingletonOne#1");
+      expect(subject.dependency.name).toEqual("SingletonTwo#1");
+    });
+  });
 });
 
 let DependencyOneCounter = 0;
@@ -260,4 +276,14 @@ class ConfiguredSubject {
   getName() {
     return `That subject: ${this.object.name}`;
   }
+}
+
+class DependantSubject {
+  constructor(
+    @MapInject(DependencyOne, d => d.name)
+    public name: string,
+
+    @Inject(DependencyTwo)
+    public dependency: DependencyTwo
+  ) {}
 }

@@ -45,13 +45,26 @@ To install using the **yarn** package manager:
 
 `$ yarn add @here-mobility/micro-di`
 
+# Project Configuration
+
+Following parameters should be enabled in your `tsconfig.json`:
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
+  },
+}
+```
+
 # Usage
 
 ### Dependency Registration
 
 Register `SomeFactory` as a dependency using `RegisterDependency` method. This can be done anywhere in your application code:
 
-```js
+```typescript
 import { RegisterDependency } from "@here-mobility/micro-di";
 import { SomeFactory } from "some-factory.js";
 
@@ -60,7 +73,7 @@ RegisterDependency(SomeFactory, () => new SomeFactory("param"))
 
 Register `SomeClass` using `RegisterSingleton` method. `RegisterSingleton` registers a resolver function which will be resolved to the constructed instance the first time `SomeClass` dependency is accessed. After the first time, the resolved instance will be stored in the container and subsequent access to `SomeClass` will always return the same instance as a Singleton.
 
-```js
+```typescript
 import { RegisterSingleton } from "@here-mobility/micro-di";
 import { SomeClass } from "some-class.js";
 
@@ -69,7 +82,7 @@ RegisterSingleton(SomeClass, () => new SomeClass("param"))
 
 It is possible to register dependencies by using [Experimental-Decorators](https://www.typescriptlang.org/docs/handbook/decorators.html). The same two options are available with decorators. `Resolvable` decorator registers resolver function as is:
 
-```js
+```typescript
 import { Resolvable } from "@here-mobility/micro-di";
 
 const counter = 0;
@@ -85,8 +98,8 @@ class NameFactory {
 
 `Singleton` decorator will register a single instance of this object:
 
-```js
-import { Singlton } from "@here-mobility/micro-di";
+```typescript
+import { Singleton } from "@here-mobility/micro-di";
 
 @Singleton()
 class Locator {
@@ -100,13 +113,37 @@ class Locator {
 
 Dependency can be resolved by using `Resolve` method. This can be done anywhere in your application code:
 
-```js
+```typescript
 import { Resolve } from "@here-mobility/micro-di";
 import { NameFactory } from "named-factory.js";
 
 const instance = Resolve(NameFactory);
 const second = Resolve<NameFactory>("NameFactory"); // String token can be resolved to any type
 
+```
+
+Dependency can be injected to constructor arguments automatically:
+
+```typescript
+import { MapInject, Construct } from "@here-mobility/micro-di";
+
+const instance = Construct(DependantClass);
+
+class DependantClass {
+  name: string = "noname";
+
+  constructor(
+    @Inject("NameFactory")
+    private factory: NameFactory,
+
+    @Inject(Locator)
+    private prop: Locator
+  )
+
+  giveName() {
+    this.name = this.factory.getName();
+  }
+}
 ```
 
 Dependency can also be injected by using experimental-decorator `Dynamic` or `Lazy`:
@@ -136,7 +173,7 @@ Dependencies in unit tests can be simply overridden with relevant mocks without 
 
 Example of `register-mocks.js`:
 
- ```javascript
+ ```typescript
 import { MockFactory, MockLocator } from "mocks"
 import { Locator } from "locator.js";
 import { NameFactory } from "named-factory.js";
@@ -147,7 +184,7 @@ OverrideResolver(NameFactory, () => new MockFactory());
 
 Using in the test case:
 
-```javascript
+```typescript
 import "./register-mocks.js";
 import { DependantClass } from "@/dependant-class.ts";
 import { MockFactory } from "mocks"
